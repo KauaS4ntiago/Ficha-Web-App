@@ -1,6 +1,7 @@
 import {useState} from 'react'
 import '../../styles/auth.css'
 import logo from '../../assets/logo.svg'
+import {Link} from 'react-router-dom'
 
 
 function Register() {
@@ -25,7 +26,7 @@ function Register() {
                 <input className="auth-input" id="password" placeholder='Digite novamente sua senha' type="password" value={repPassword} onChange={e => {setRepPassword(e.target.value)}}/>
                 <button className="auth-button" onClick={handleRegister}>Cadastrar</button> 
             </div>
-            <p>Já possui uma conta? <a className="" href="/">clique aqui!</a></p>
+            <p>Já possui uma conta? <Link to='/'>clique aqui</Link></p>
         </div>
     )
 }
