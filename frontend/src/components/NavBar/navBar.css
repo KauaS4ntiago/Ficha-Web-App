@@ -1,0 +1,65 @@
+.NavBar-container {
+    background-color: #23476A;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    justify-content: space-between;
+}
+
+.Logo-img {
+    width: 60px;
+    margin: 25px;
+    padding-left: 4px;
+}
+
+.Search-bar {
+    color: #f1f1f1;
+    display: flex;
+    align-items: center;
+    background-color: #A0BCD6;
+    border-radius: 19px;
+    width: 400px;
+    height: 50px;
+    box-shadow: inset 0px 0px 15px rgba(0, 0, 0, 0.2);
+}
+
+.Search-bar input {
+    border: none;
+    outline: none;
+    background: none;
+    width: 85%;
+}
+
+.Search-bar:hover {
+    background-color: #b1c1d0;
+}
+
+.Search-bar img {
+    width: 18px;
+    margin: 10px;
+}
+
+.Search-bar input::placeholder {
+    color: rgba(21, 21, 21, 0.25);
+    font-weight: bold;
+    font-size: medium;
+}
+
+.exit-button {
+    display: flex;
+    align-items: center;
+    color: #f1f1f1;
+    background: none;
+    border: none;
+    font-size:medium;
+    font-weight: bold;
+    margin-right: 30px;
+    cursor: pointer;
+}
+
+.exit-button img {
+    width: 25px;
+    margin: 6px;
+}
