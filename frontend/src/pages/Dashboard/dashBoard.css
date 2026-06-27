@@ -1,0 +1,35 @@
+.DashBoard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-top: 5px;
+    position: relative;
+}
+
+.DashBoard-header h1 {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.DashBoard-header button{
+    border: none;
+    background: none;
+    cursor: pointer;
+    margin-left: auto;
+    padding: 15px;
+}
+
+.DashBoard-link {
+    margin-left: auto;
+}
+
+.Dashboard-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 25px;
+    gap: 30px;
+    justify-items: center;
+}

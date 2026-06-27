@@ -1,0 +1,21 @@
+.CharacterCard-container {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    text-align: center;
+}
+
+.CharacterCard-container img {
+    border-radius: 100px;
+    width: 220px;
+    margin: 10px;
+}
+
+.CharacterCard-container h2 {
+    margin: 10px;
+}
+
+.CharacterCard-container a {
+    text-decoration: none;
+    color: inherit;
+}
