@@ -1,0 +1,45 @@
+.CharacterSheet-header {
+    background-color: #23476A;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    justify-content: space-between;
+    color: #f1f1f1;
+}
+
+.CharacterSheet-header button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 15px;
+}
+
+.CharacterSheet-header button img {
+    width: 40px;
+}
+
+.CharacterSheet-header-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 0 20px;
+}
+
+.CharacterSheet-header-buttons button img {
+    width: 30px;
+}
+
+.CharacterSheet-content {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.CharacterSheet-character {
+    display: flex;
+    flex-direction: column;
+}
