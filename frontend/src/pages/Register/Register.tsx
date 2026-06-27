@@ -2,11 +2,13 @@ import {useState} from 'react'
 import '../../styles/auth.css'
 import logo from '../../assets/logo.svg'
 
-function Login() {
+
+function Register() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [repPassword, setRepPassword] = useState('')
 
-    function handleLogin() {
+    function handleRegister() {
         console.log("Email: ", email)
         console.log("Password: ", password)
     }
@@ -15,18 +17,17 @@ function Login() {
         <div className='auth-container'>
             <img className="auth-img" src={logo} alt="RpG Logo"/>
             <div className='auth-card'>
-                <h1>Log-in</h1>
+                <h1>Cadastro</h1>
                 <label htmlFor="email">E-mail</label>
                 <input className="auth-input" id="email" type="text" placeholder='Digite seu e-mail' value={email} onChange={e => {setEmail(e.target.value)}}/>
                 <label htmlFor="password">Senha</label>
                 <input className="auth-input" id="password" placeholder='Digite sua senha' type="password" value={password} onChange={e => {setPassword(e.target.value)}}/>
-                <p>Esqueceu sua senha? <a href="">clique aqui!</a></p>
-                <button className="auth-button" onClick={handleLogin}>Entrar</button> 
+                <input className="auth-input" id="password" placeholder='Digite novamente sua senha' type="password" value={repPassword} onChange={e => {setRepPassword(e.target.value)}}/>
+                <button className="auth-button" onClick={handleRegister}>Cadastrar</button> 
             </div>
-            <p>Ainda não possui uma conta? <a className="" href="/register">clique aqui!</a></p>
+            <p>Já possui uma conta? <a className="" href="/">clique aqui!</a></p>
         </div>
     )
 }
 
-
-export default Login
+export default Register;

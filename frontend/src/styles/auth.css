@@ -1,4 +1,4 @@
-.login-container {
+.auth-container {
     width: 100vw;
     height: 100vh;
     display: flex;
@@ -9,7 +9,22 @@
     padding-bottom: 100px;
 }
 
-.card-login {
+.auth-container p {
+    color: #f1f1f1;
+
+}
+
+.auth-container a {
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.auth-container a:hover {
+    color: #a8c8e8;
+}
+
+.auth-card {
     background-color: #1B3752;
     color: #f1f1f1;
     width: 400px;
@@ -23,24 +38,24 @@
     gap:5px;
 }
 
-.card-login p{
+.auth-card p{
     margin-left: 100px;
 }
 
-.card-login h1 {
+.auth-card h1 {
     font-weight:900;
     text-align: center;
     margin-top: 20px;
     margin-bottom: 30px;
 }
 
-.card-login label {
+.auth-card label {
     font-weight: 400;
     font-size: large;
     margin-left: 15px;
 }
 
-.input-login {
+.auth-input {
     color: white;
     border-radius: 11px;
     background-color: #6F9AC3;
@@ -51,7 +66,11 @@
     box-shadow: inset 0px 0px 15px rgba(0, 0, 0, 0.2);
 }
 
-.button-login {
+.auth-input::placeholder {
+    color: rgba(8, 8, 8, 0.25);
+}
+
+.auth-button {
     background-color: #2B69A5;
     border: none;
     border-radius: 15px;
@@ -64,30 +83,11 @@
     transition: background-color 0.3s;
 }
 
-.button-login:hover {
+.auth-button:hover {
     background-color: #2D7DD2;
     cursor: pointer;
 }
 
-.button-login:active {
+.auth-button:active {
     background-color: #1a5a8a;
-}
-
-.login-container p {
-    color: #f1f1f1;
-
-}
-
-.login-container a {
-    color: white;
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-.login-container a:hover {
-    color: #a8c8e8;
-}
-
-.input-login::placeholder {
-    color: rgba(8, 8, 8, 0.25);
 }
