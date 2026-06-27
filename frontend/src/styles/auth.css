@@ -56,7 +56,6 @@
 }
 
 .auth-input {
-    color: white;
     border-radius: 11px;
     background-color: #6F9AC3;
     margin: 5px;
@@ -68,6 +67,7 @@
 
 .auth-input::placeholder {
     color: rgba(8, 8, 8, 0.25);
+    font-weight: bold;
 }
 
 .auth-button {
