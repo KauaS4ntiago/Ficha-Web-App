@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify
-from database.connection import db
 from models.user import User
 from utils.generic_crud import GenericCrud
 
