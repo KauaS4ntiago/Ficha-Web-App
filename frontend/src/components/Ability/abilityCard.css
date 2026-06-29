@@ -1,0 +1,5 @@
+.AbilityCard-container {
+    display: flex;
+    align-items: rows;
+    gap: 5%;
+}

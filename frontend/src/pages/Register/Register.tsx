@@ -1,7 +1,7 @@
 import {useState} from 'react'
 import '../../styles/auth.css'
 import logo from '../../assets/logo.svg'
-import {Link} from 'react-router-dom'
+import {Link, useNavigate} from 'react-router-dom'
 
 
 function Register() {
@@ -9,10 +9,7 @@ function Register() {
     const [password, setPassword] = useState('')
     const [repPassword, setRepPassword] = useState('')
 
-    function handleRegister() {
-        console.log("Email: ", email)
-        console.log("Password: ", password)
-    }
+    const navigate = useNavigate()
 
     return (
         <div className='auth-container'>
@@ -24,7 +21,7 @@ function Register() {
                 <label htmlFor="password">Senha</label>
                 <input className="auth-input" id="password" placeholder='Digite sua senha' type="password" value={password} onChange={e => {setPassword(e.target.value)}}/>
                 <input className="auth-input" id="password" placeholder='Digite novamente sua senha' type="password" value={repPassword} onChange={e => {setRepPassword(e.target.value)}}/>
-                <button className="auth-button" onClick={handleRegister}>Cadastrar</button> 
+                <button className="auth-button" onClick={() => navigate('/dashBoard')}>Cadastrar</button> 
             </div>
             <p>Já possui uma conta? <Link to='/'>clique aqui</Link></p>
         </div>

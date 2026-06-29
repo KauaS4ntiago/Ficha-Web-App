@@ -6,7 +6,7 @@
 }
 
 .CharacterCard-container img {
-    border-radius: 100px;
+    border-radius: 50%;
     width: 220px;
     margin: 10px;
 }

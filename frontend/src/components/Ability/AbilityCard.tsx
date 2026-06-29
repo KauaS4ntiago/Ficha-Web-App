@@ -2,10 +2,12 @@ import './abilityCard.css'
 
 function AbilityCard({image, title, description}:{image:string, title:string, description:string}) {    
     return (
-        <div>
+        <div className='AbilityCard-container'>
             <img src={image} alt="Imagem da habilidade"/>
-            <h3>{title}</h3>
-            <p>{description}</p>
+            <div className='AbilityCard-text'>
+                <h3>{title}</h3>
+                <p>{description}</p>
+            </div> 
         </div>
     )
 }

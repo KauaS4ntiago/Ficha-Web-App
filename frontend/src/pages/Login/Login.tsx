@@ -2,15 +2,13 @@ import {useState} from 'react'
 import '../../styles/auth.css'
 import logo from '../../assets/logo.svg'
 import {Link} from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 function Login() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
-    function handleLogin() {
-        console.log("Email: ", email)
-        console.log("Password: ", password)
-    }
+    const navigate = useNavigate()
 
     return (
         <div className='auth-container'>
@@ -22,7 +20,7 @@ function Login() {
                 <label htmlFor="password">Senha</label>
                 <input className="auth-input" id="password" placeholder='Digite sua senha' type="password" value={password} onChange={e => {setPassword(e.target.value)}}/>
                 <p>Esqueceu sua senha? <a href="">clique aqui</a></p>
-                <button className="auth-button" onClick={handleLogin}>Entrar</button> 
+                <button className="auth-button" onClick={() => navigate('/dashBoard')}>Entrar</button> 
             </div>
             <p>Ainda não possui uma conta? <Link to="/register">clique aqui</Link></p>
         </div>
