@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import AbilityCard from '../../components/Ability/AbilityCard'
 import ExitArrow from '../../assets/exitArrow.svg'
 import Edit from '../../assets/edit.svg'
-import Notepad from '../../assets/notepad.svg'
 import Dice from '../../assets/dice.svg'
 import Heart from '../../assets/heart.svg'
 import Shield from '../../assets/shield.svg'
@@ -40,15 +39,11 @@ function CharacterSheet() {
 return (
     <div className='CharacterSheet-container'>
         <div className='CharacterSheet-header'>
-            <button onClick={() => navigate(-1)}><img src={ExitArrow} alt="botão de saída"/></button>
-            <h1>Ficha de personagem</h1>
-            <div className='CharacterSheet-header-buttons'>
-                <button><img src={Notepad} alt="botão de anotação"/>Anotações</button>
-                <button><img src={Edit} alt="botão de edição"/>Editar</button>
-            </div>           
+            <button onClick={() => navigate(-1)}><img src={ExitArrow} alt="botão de saída"/></button>      
         </div>
         <div className='CharacterSheet-content'>
             <div className='CharacterSheet-character'>
+                <h2>Ficha de personagem</h2>
                 <div className='CharacterSheet-profile'>                    
                     <div className='profile-image-wrapper'>
                         <img className='Profile-img' src="https://placehold.co/200x200" alt="imagem do personagem"/>
@@ -145,14 +140,14 @@ return (
                     <li><p>Acrobacia</p> <input type="number" aria-label="acrobacia" defaultValue={0}/> <input type="number" aria-label="acrobacia2" defaultValue={0}/></li>
                 </ol>
             </div>
-
             <div className='CharacterSheet-abilities-inventory'>
+                <button><img src={Edit} alt="botão de edição"/></button>
                 <h2>Habilidades</h2>
                 <ol>
                     {abilities.map(ability => (<AbilityCard title={ability.title} description={ability.description} image={ability.image} key={ability.id}/>))}
                 </ol>
-                <h2>Inventário</h2>
-                <textarea aria-label="inventário" name="inventário" id="inventory"></textarea>
+                <h2>Anotações</h2>
+                <textarea aria-label="anotações" name="anotações" id="inventory"></textarea>
             </div>
         </div>
     </div>

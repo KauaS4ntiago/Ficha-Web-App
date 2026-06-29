@@ -21,9 +21,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.1rem 1.5rem;
-  border-bottom-left-radius: 18px;
-  border-bottom-right-radius: 18px;
+  padding: 1.28rem 1.3rem;
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
   position: relative;
 }
 
@@ -83,6 +83,11 @@ body {
   padding-left: 4rem;
 }
 
+.CharacterSheet-character > h2 {
+  text-align: center;
+  padding-bottom: 1.1rem;
+}
+
 .CharacterSheet-profile {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -102,7 +107,7 @@ body {
   background: none;
   cursor: pointer;
   padding: 0;
-  left: 24.65rem;
+  left: 24.6rem;
   top: -12rem;
 
   img {
@@ -290,8 +295,8 @@ body {
 }
 .attribute-icon {
   position: relative;
-  width: 5rem;
-  height: 5rem;
+  width: 4rem;
+  height: 4rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -305,11 +310,11 @@ body {
   margin: 0;
   color: #f1f1f1;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1.4rem;
 }
 .CharacterSheet-attributes h2 {
   margin: 0;
-  font-size: 1.7rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #1a1a1a;
 }
@@ -367,7 +372,26 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  position: relative;
+  bottom: 3.3rem;
 }
+
+.CharacterSheet-abilities-inventory button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  width: fit-content;
+  margin-left: auto;
+  position: relative;
+  top: 3rem;
+
+    img {
+      width: 2.3rem;
+      display: block;
+    }
+}
+
 .CharacterSheet-abilities-inventory h2 {
   text-align: center;
   margin: 0 0 0.6rem 0;
@@ -388,7 +412,7 @@ body {
 }
 .CharacterSheet-abilities-inventory textarea {
   width: 100%;
-  min-height: 160px;
+  height: 9.2rem;
   border: 1.5px solid #c2d6eb;
   border-radius: 6px;
   padding: 0.8rem;

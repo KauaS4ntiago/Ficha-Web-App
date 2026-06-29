@@ -39,7 +39,8 @@
 }
 
 .auth-card p{
-    margin-left: 100px;
+    margin-left: 4.8rem;
+    font-size:smaller;
 }
 
 .auth-card h1 {
