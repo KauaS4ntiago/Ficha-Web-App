@@ -26,8 +26,3 @@ class Character(db.Model):
     notes = db.Column(
         db.Text
     )
-
-    user = db.relationship(
-        'User',
-        backref='characters'
-    )
