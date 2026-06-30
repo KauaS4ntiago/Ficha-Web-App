@@ -12,6 +12,11 @@ CREATE TABLE users (
 CREATE TABLE characters (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
+    current_hp SMALLINT NOT NULL,
+    max_hp SMALLINT NOT NULL,
+    current_sanity SMALLINT NOT NULL,
+    max_sanity SMALLINT NOT NULL,
+    defense TINYINT NOT NULL,
     name VARCHAR(100) NOT NULL,
     image VARCHAR(255),
     notes TEXT,

@@ -61,6 +61,11 @@ def get_characters():
         {
             "id": character.id,
             "name": character.name,
+            "current_hp": character.current_hp,
+            "max_hp": character.max_hp,
+            "current_sanity": character.current_sanity,
+            "max_sanity": character.max_sanity,
+            "defense": character.defense,
             "image": character.image,
             "notes": character.notes,
             "attributes":  [
@@ -91,6 +96,11 @@ def get_user_charactersu(user_id):
         {
             "id": character.id,
             "name": character.name,
+            "current_hp": character.current_hp,
+            "max_hp": character.max_hp,
+            "current_sanity": character.current_sanity,
+            "max_sanity": character.max_sanity,
+            "defense": character.defense,
             "image": character.image,
             "notes": character.notes,
             "attributes":  [
@@ -123,6 +133,11 @@ def get_character(id):
         return jsonify({
             "id": character.id,
             "name": character.name,
+            "current_hp": character.current_hp,
+            "max_hp": character.max_hp,
+            "current_sanity": character.current_sanity,
+            "max_sanity": character.max_sanity,
+            "defense": character.defense,
             "image": character.image,
             "notes": character.notes,
             "attributes":  [

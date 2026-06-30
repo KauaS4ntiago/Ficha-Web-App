@@ -18,6 +18,31 @@ class Character(db.Model):
         db.String(100),
         nullable=False
     )
+    
+    current_hp = db.Column(
+        db.SmallInteger,
+        nullable=False
+    )
+    
+    max_hp = db.Column(
+        db.SmallInteger,
+        nullable=False
+    )
+    
+    current_sanity = db.Column(
+        db.SmallInteger,
+        nullable=False
+    )
+    
+    max_sanity = db.Column(
+        db.SmallInteger,
+        nullable=False
+    )    
+    
+    defense = db.Column(
+        db.SmallInteger,
+        nullable=False
+    )
 
     image = db.Column(
         db.String(255)
