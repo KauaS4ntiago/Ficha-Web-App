@@ -5,6 +5,7 @@ from models.attribute import Attribute
 from models.skill import Skill
 from models.character import Character
 from utils.generic_crud import GenericCrud
+from flask_jwt_extended import jwt_required
 
 characters_bp = Blueprint('character',__name__,url_prefix='/characters')
 
@@ -12,6 +13,7 @@ crud = GenericCrud(Character)
 
 #POST - CRIAR
 @characters_bp.route('', methods=['POST'])
+@jwt_required()
 def create_character():
     try:
         data = request.get_json()
@@ -50,6 +52,7 @@ def create_character():
         
 #GET ALL - RETORNAR TODOS
 @characters_bp.route('', methods=['GET'])
+@jwt_required()
 def get_characters():
 
     characters = crud.get_all()
@@ -77,9 +80,40 @@ def get_characters():
         for character in characters
     ])
     
+#GET ALL - RETORNAR TODOS OS PERSONAGENS DE 1 USUÁRIO
+@characters_bp.route('/user/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_user_charactersu(user_id):
+
+    characters = Character.query.filter_by(user_id=user_id).all()
+
+    return jsonify([
+        {
+            "id": character.id,
+            "name": character.name,
+            "image": character.image,
+            "notes": character.notes,
+            "attributes":  [
+                {"id": attr.id, "name": attr.name, "value": attr.value}
+                for attr in character.attributes
+            ],
+            "skills": [
+                {"id": skill.id, "name": skill.name, "value": skill.value}
+                for skill in character.skills
+            ],
+            "abilities": [
+                {"id": ability.id, "image": ability.image, "name": ability.name, "description": ability.description}
+                for ability in character.abilities
+            ]
+        }
+
+        for character in characters
+    ])
+    
     
 #GET ONE - RETORNAR 1 POR ID
 @characters_bp.route('/<int:id>', methods=['GET'])
+@jwt_required()
 def get_character(id):
 
     try:
@@ -91,9 +125,18 @@ def get_character(id):
             "name": character.name,
             "image": character.image,
             "notes": character.notes,
-            "attributes": character.attributes,
-            "skills": character.skills,
-            "abilities": character.abilities
+            "attributes":  [
+                {"id": attr.id, "name": attr.name, "value": attr.value}
+                for attr in character.attributes
+            ],
+            "skills": [
+                {"id": skill.id, "name": skill.name, "value": skill.value}
+                for skill in character.skills
+            ],
+            "abilities": [
+                {"id": ability.id, "image": ability.image, "name": ability.name, "description": ability.description}
+                for ability in character.abilities
+            ]
         })
 
 
@@ -105,6 +148,7 @@ def get_character(id):
         
 #PUT - ATUALIZAR POR ID
 @characters_bp.route('/<int:id>', methods=['PUT'])
+@jwt_required()
 def update_character(id):
 
     try:
@@ -130,6 +174,7 @@ def update_character(id):
      
 #DELETE - DELETAR POR ID   
 @characters_bp.route('/<int:id>', methods=['DELETE'])
+@jwt_required()
 def delete_character(id):
 
     try:

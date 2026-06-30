@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from models.user import User
 from utils.generic_crud import GenericCrud
+from flask_jwt_extended import jwt_required
 
 users_bp = Blueprint('user',__name__,url_prefix='/users')
 
@@ -8,6 +9,7 @@ crud = GenericCrud(User)
 
 #POST - CRIAR
 @users_bp.route('', methods=['POST'])
+@jwt_required()
 def create_user():
 
     try:
@@ -27,9 +29,10 @@ def create_user():
         return jsonify({
             "error": str(e)
         }), 400
-        
+
 #GET ALL - RETORNAR TODOS
 @users_bp.route('', methods=['GET'])
+@jwt_required()
 def get_users():
 
     users = crud.get_all()
@@ -47,6 +50,7 @@ def get_users():
     
 #GET ONE - RETORNAR 1 POR ID
 @users_bp.route('/<int:id>', methods=['GET'])
+@jwt_required()
 def get_user(id):
 
     try:
@@ -68,6 +72,7 @@ def get_user(id):
         
 #PUT - ATUALIZAR POR ID
 @users_bp.route('/<int:id>', methods=['PUT'])
+@jwt_required()
 def update_user(id):
 
     try:
@@ -93,6 +98,7 @@ def update_user(id):
      
 #DELETE - DELETAR POR ID   
 @users_bp.route('/<int:id>', methods=['DELETE'])
+@jwt_required()
 def delete_user(id):
 
     try:
