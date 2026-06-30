@@ -1,7 +1,6 @@
 import NavBar from '../../components/NavBar/NavBar';
 import Plus from '../../assets/plus.svg'
 import CharacterCard from '../../components/CharacterCard/CharacterCard';
-import {Link} from 'react-router-dom'
 import './dashBoard.css'
 import { useEffect, useState } from 'react';
 
@@ -19,32 +18,87 @@ function DashBoard() {
 
     useEffect(() => {
         const userId = localStorage.getItem('user_id')
+
         fetch(`http://127.0.0.1:5000/characters/user/${userId}`, {
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
             }
         })
         .then(response => response.json())
         .then(data => {
             setCharacters(data)
-    })})
+        })
+
+    }, [])
         
     const filteredCharacters = characters.filter(
         character => character.name.toLowerCase().includes(search.toLowerCase())
     )
 
+    function handleCreateCharacter() {
+        const data = {
+            user_id: localStorage.getItem('user_id'),
+            name: 'Personagem novo',
+            current_hp: 0,
+            max_hp: 0,
+            current_sanity: 0,
+            max_sanity: 0,
+            defense: 0,
+            image: 'https://placehold.co/100x100',
+            notes: 'Digite suas anotações aqui',
+            attributes: [
+                { name: 'Intelecto', value: 0 },
+                { name: 'Força', value: 0 },
+                { name: 'Vigor', value: 0 },
+                { name: 'Agilidade', value: 0 },
+                { name: 'Presença', value: 0 }
+            ],
+            skills: [
+                { name: 'Perícia 1', value: 0 },
+                { name: 'Perícia 2', value: 0 },
+                { name: 'Perícia 3', value: 0 },
+                { name: 'Perícia 4', value: 0 },
+                { name: 'Perícia 5', value: 0 },
+                { name: 'Perícia 6', value: 0 },
+                { name: 'Perícia 7', value: 0 },
+                { name: 'Perícia 8', value: 0 },
+                { name: 'Perícia 9', value: 0 },
+                { name: 'Perícia 10', value: 0 }
+            ],
+            abilities: [
+                { name: 'Bola de Fogo', description: 'Uma bola de fogo poderosa', image: null }
+            ]
+        }
+        fetch('http://127.0.0.1:5000/characters', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.error) {
+                    alert(data.error)
+            }})
+        }
+
     return (
         <div className='DashBoard-container'>
            <NavBar search={search} setSearch={setSearch} />
-            <div className='DashBoard-header'>
+           <div className='DashBoard-content'>
+                <div className='DashBoard-header'>
                 <h1>Meus personagens</h1>
-                <Link className='DashBoard-link' to='/create-character'><button className='DashBoard-button'><img src={Plus} alt="Adicionar"/></button></Link>
-            </div>
+                <button className='DashBoard-button' onClick={handleCreateCharacter}><img src={Plus} alt="Adicionar"/></button>
+                </div>
             <ul className='Dashboard-list'>
                 {filteredCharacters.map(character => (
                     <CharacterCard name={character.name} image={character.image} id={character.id} key={character.id}/>
                 ))}
             </ul>
+           </div>
+            
         </div>
     )
 }
