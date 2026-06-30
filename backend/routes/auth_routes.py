@@ -28,7 +28,8 @@ def register():
         
         return jsonify({
             "message": "Usuário criado",
-            "token": token
+            "token": token,
+            "user_id": user.id
         }), 201
 
     except ValueError as e:
@@ -55,7 +56,8 @@ def login():
             token = create_access_token(identity=str(user.id))
             return jsonify({
                 "message": "Acesso permitido",
-                "token": token
+                "token": token,
+                "user_id": user.id
             }), 200
         
         return jsonify({

@@ -10,6 +10,29 @@ function Login() {
 
     const navigate = useNavigate()
 
+    function handleLogin() {
+        fetch('http://127.0.0.1:5000/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.token) {
+                localStorage.setItem('token', data.token)
+                localStorage.setItem('user_id', data.user_id)
+                navigate('/dashboard')
+            } else {
+                alert(data.error)
+            }
+    })
+    }
+
     return (
         <div className='auth-container'>
             <img className="auth-img" src={logo} alt="RpG Logo"/>
@@ -20,7 +43,7 @@ function Login() {
                 <label htmlFor="password">Senha</label>
                 <input className="auth-input" id="password" placeholder='Digite sua senha' type="password" value={password} onChange={e => {setPassword(e.target.value)}}/>
                 <p>Esqueceu sua senha? <a href="">clique aqui</a></p>
-                <button className="auth-button" onClick={() => navigate('/dashBoard')}>Entrar</button> 
+                <button className="auth-button" onClick={() => handleLogin()}>Entrar</button> 
             </div>
             <p>Ainda não possui uma conta? <Link to="/register">clique aqui</Link></p>
         </div>
