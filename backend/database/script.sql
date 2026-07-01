@@ -35,7 +35,7 @@ CREATE TABLE skill (
     id INT PRIMARY KEY AUTO_INCREMENT,
     character_id INT NOT NULL,
     name VARCHAR(50) NOT NULL,
-    value TINYINT NOT NULL CHECK (value BETWEEN 5 AND 20),
+    value TINYINT NOT NULL CHECK (value BETWEEN -20 AND 20),
     FOREIGN KEY (character_id) REFERENCES characters(id)
 );
 

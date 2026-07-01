@@ -245,7 +245,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: #6A1111;
+  background: #6A1111;
   color: #f1f1f1;
   font-weight: 700;
   box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.55);
@@ -387,9 +387,24 @@ body {
   top: 3rem;
 
     img {
-      width: 2.3rem;
+      transform: scale(0.8);
+      transition: transform 0.3s;
       display: block;
+
+        &:hover{
+          transform: scale(1);
+        }
+        &:active{
+          transform: scale(0.7);
+        }
     }
+}
+
+.CharacterSheet-abilities-inventory button.active img {
+  transform: scale(1.1);
+      &:active{
+          transform: scale(0.8);
+        }
 }
 
 .CharacterSheet-abilities-inventory h2 {
@@ -438,3 +453,80 @@ body {
     overflow: auto;
   }
 }
+
+.attribute-icon input[type="number"] {
+  position: absolute;
+  width: 2.5rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  text-align: center;
+  color: #f1f1f1;
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+input.sanity-max {
+  width: 2rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  text-align: center;
+  color: #f1f1f1;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.lifeBar input[type="number"] {
+  width: 2rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  text-align: center;
+  color: #f1f1f1;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.attribute-icon input[type="number"]::-webkit-outer-spin-button,
+.attribute-icon input[type="number"]::-webkit-inner-spin-button,
+input.sanity-max::-webkit-outer-spin-button,
+input.sanity-max::-webkit-inner-spin-button,
+.lifeBar input[type="number"]::-webkit-outer-spin-button,
+.lifeBar input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.Shield input[type="number"] {
+  position: absolute;
+  width: 2rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  text-align: center;
+  color: #f1f1f1;
+  font-weight: 700;
+  font-size: 1rem;
+}
+.Shield input[type="number"]::-webkit-outer-spin-button,
+.Shield input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+textarea.ability-description {
+  width: 100%;
+  height: 5rem;
+  border: 1.5px solid #c2d6eb;
+  border-radius: 6px;
+  padding: 0.8rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: #dfe8f1;
+  color: #1a1a1a;
+  resize: vertical;
+  outline: none;
+  resize: none;
+}
+

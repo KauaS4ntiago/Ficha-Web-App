@@ -14,22 +14,24 @@ function DashBoard() {
     const [search, setSearch] = useState('')
     const [characters, setCharacters] = useState<Character[]>([])
 
+    const loadCharacters = () => {
+    const userId = localStorage.getItem('user_id')
 
-
-    useEffect(() => {
-        const userId = localStorage.getItem('user_id')
-
-        fetch(`http://127.0.0.1:5000/characters/user/${userId}`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
+    fetch(`http://127.0.0.1:5000/characters/user/${userId}`, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => { if(data.error) {
+            alert(data.error)
+        } else {
             setCharacters(data)
-        })
+        }
+    })
+}
 
-    }, [])
+    useEffect(() => { loadCharacters()},[])
         
     const filteredCharacters = characters.filter(
         character => character.name.toLowerCase().includes(search.toLowerCase())
@@ -81,6 +83,8 @@ function DashBoard() {
             .then(data => {
                 if(data.error) {
                     alert(data.error)
+            } else {
+                    loadCharacters()
             }})
         }
 

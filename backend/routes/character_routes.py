@@ -1,10 +1,11 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_from_directory
 from database.connection import db
 from models.ability import Ability
 from models.attribute import Attribute
 from models.skill import Skill
 from models.character import Character
 from utils.generic_crud import GenericCrud
+from utils.file_upload import save_image, UPLOAD_FOLDER
 from flask_jwt_extended import jwt_required
 
 characters_bp = Blueprint('character',__name__,url_prefix='/characters')
@@ -46,8 +47,9 @@ def create_character():
             "id": character.id
         }), 201
 
-    except ValueError as e:
+    except Exception as e: 
         db.session.rollback()
+        print(f"Erro interno no Flask: {str(e)}")
         return jsonify({"error": str(e)}), 400
         
 #GET ALL - RETORNAR TODOS
@@ -160,32 +162,6 @@ def get_character(id):
         return jsonify({
             "error": str(e)
         }), 404
-        
-#PUT - ATUALIZAR POR ID
-@characters_bp.route('/<int:id>', methods=['PUT'])
-@jwt_required()
-def update_character(id):
-
-    try:
-
-        data = request.get_json()
-
-        character = crud.update(
-            id,
-            data
-        )
-
-        return jsonify({
-            "message": "Personagem atualizado",
-            "id": character.id
-        })
-
-
-    except ValueError as e:
-
-        return jsonify({
-            "error": str(e)
-        }), 400
      
 #DELETE - DELETAR POR ID   
 @characters_bp.route('/<int:id>', methods=['DELETE'])
@@ -206,3 +182,29 @@ def delete_character(id):
         return jsonify({
             "error": str(e)
         }), 404
+        
+#PUT - ATUALIZAR POR ID
+@characters_bp.route('/<int:id>', methods=['PUT'])
+@jwt_required()
+def update_character(id):
+    try:
+        data = request.form.to_dict()
+
+        image_file = request.files.get('image')
+        if image_file:
+            data['image'] = save_image(image_file, subfolder='characters')
+
+        character = crud.update(id, data)
+
+        return jsonify({
+            "message": "Personagem atualizado",
+            "id": character.id
+        })
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+# GET - SERVIR ARQUIVO DE IMAGEM DO PERSONAGEM
+@characters_bp.route('/uploads/<path:filename>', methods=['GET'])
+def get_character_image(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)

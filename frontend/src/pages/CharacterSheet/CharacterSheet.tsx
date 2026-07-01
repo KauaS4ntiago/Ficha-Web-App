@@ -1,6 +1,6 @@
 import './characterSheet.css'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import AbilityCard from '../../components/Ability/AbilityCard'
 import ExitArrow from '../../assets/exitArrow.svg'
 import Edit from '../../assets/edit.svg'
@@ -14,144 +14,378 @@ import ArrowLeft from '../../assets/arrow-left.svg'
 import ArrowRight from '../../assets/arrow-right.svg'
 import SanityBar from '../../assets/sanityBar.svg'
 
+interface Attribute { id: number; name: string; value: number }
+interface Skill { id: number; name: string; value: number }
+interface Ability { id: number; name: string; description: string; image: string }
+
+interface CharacterData {
+    id: number;
+    name: string;
+    current_hp: number;
+    max_hp: number;
+    current_sanity: number;
+    max_sanity: number;
+    defense: number;
+    image: string;
+    notes: string;
+    attributes: Attribute[];
+    skills: Skill[];
+    abilities: Ability[];
+}
+
+const API_URL = 'http://127.0.0.1:5000';
+const authHeaders = () => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${localStorage.getItem('token')}`
+});
+
 function CharacterSheet() {
-    const [maxHp, setMaxHp] = useState(23)
-    const [currentHp, setCurrentHp] = useState(23)
+    const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
 
-    const [maxSanity, setSanity] = useState(23)
-    const [currentSanity, setCurrentSanity] = useState(23)
+    const [character, setCharacter] = useState<CharacterData | null>(null);
+    const [currentHp, setCurrentHp] = useState(0);
+    const [currentSanity, setCurrentSanity] = useState(0);
+    const [notes, setNotes] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
+    const blobUrl = URL.createObjectURL(file);
 
-    const navigate = useNavigate()
 
-        const abilities = [
-    { id: 1, title: "bola de fogo", description: "Kabum tibeife pof pof Kabum tibeife pof pof Kabum tibeife pof pof Kabum tibeife pof pof", image: "https://placehold.co/50x50" },
-    { id: 2, title: "bola de gelo", description: "Kabum tibeife pof pof", image: "https://placehold.co/50x50" },
-    { id: 3, title: "bola de água", description: "Kabum tibeife pof pof", image: "https://placehold.co/50x50" },
-    { id: 4, title: "bola de terra", description: "Kabum tibeife pof pof", image: "https://placehold.co/50x50" },
-    { id: 5, title: "bola de planta", description: "Kabum tibeife pof pof", image: "https://placehold.co/50x50" },
-    { id: 6, title: "bola de fogo", description: "Kabum tibeife pof pof", image: "https://placehold.co/50x50" },
-    { id: 7, title: "bola de gelo", description: "Kabum tibeife pof pof", image: "https://placehold.co/50x50" },
-    { id: 8, title: "bola de água", description: "Kabum tibeife pof pof", image: "https://placehold.co/50x50" },
-    { id: 9, title: "bola de terra", description: "Kabum tibeife pof pof", image: "https://placehold.co/50x50" },
-    { id: 10, title: "bola de planta", description: "Kabum tibeife pof pof", image: "https://placehold.co/50x50" },
-    ]
+    useEffect(() => {
+        fetch(`${API_URL}/characters/${id}`, { headers: authHeaders() })
+            .then(res => { if (!res.ok) throw new Error("Erro ao carregar ficha"); return res.json(); })
+            .then((data: CharacterData) => {
+                setCharacter(data);
+                setCurrentHp(data.current_hp);
+                setCurrentSanity(data.current_sanity);
+                setNotes(data.notes || '');
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Não foi possível carregar esta ficha.");
+                navigate('/dashboard');
+            });
+    }, [id, navigate]);
 
-return (
-    <div className='CharacterSheet-container'>
-        <div className='CharacterSheet-header'>
-            <button onClick={() => navigate(-1)}><img src={ExitArrow} alt="botão de saída"/></button>      
-        </div>
-        <div className='CharacterSheet-content'>
-            <div className='CharacterSheet-character'>
-                <h2>Ficha de personagem</h2>
-                <div className='CharacterSheet-profile'>                    
-                    <div className='profile-image-wrapper'>
-                        <img className='Profile-img' src="https://placehold.co/200x200" alt="imagem do personagem"/>
-                        <button className='dice-button'><img src={Dice} alt="botão de girar dados"/></button>
-                        <div className='Shield'>
-                            <img src={Shield} alt="defesa do personagem"/>
-                            <p>16</p>
+    // ---------- PUT genérico do personagem (hp, sanidade, max_hp, max_sanity, notes...)
+    const updateCharacter = (payload: Partial<CharacterData>) => {
+        fetch(`${API_URL}/characters/${id}`, {
+            method: 'PUT', headers: authHeaders(), body: JSON.stringify(payload)
+        }).catch(err => console.error("Erro ao salvar personagem:", err));
+    };
+
+    // ---------- HP / Sanidade (botões +/-)
+    const handleHpChange = (amount: number) => {
+        if (!character) return;
+        const newHp = Math.min(character.max_hp, Math.max(0, currentHp + amount));
+        setCurrentHp(newHp);
+        updateCharacter({ current_hp: newHp });
+    };
+    const handleSanityChange = (amount: number) => {
+        if (!character) return;
+        const newSanity = Math.min(character.max_sanity, Math.max(0, currentSanity + amount));
+        setCurrentSanity(newSanity);
+        updateCharacter({ current_sanity: newSanity });
+    };
+
+    // ---------- Anotações (debounce)
+    const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const value = e.target.value;
+        setNotes(value);
+        if (notesTimer.current) clearTimeout(notesTimer.current);
+        notesTimer.current = setTimeout(() => updateCharacter({ notes: value }), 600);
+    };
+
+    // ---------- Helpers de estado local para coleções
+    const patchAttribute = (attrId: number, value: number) => {
+        if (!character) return;
+        setCharacter({
+            ...character,
+            attributes: character.attributes.map(a => a.id === attrId ? { ...a, value } : a)
+        });
+    };
+    const patchSkill = (skillId: number, patch: Partial<Skill>) => {
+        if (!character) return;
+        setCharacter({
+            ...character,
+            skills: character.skills.map(s => s.id === skillId ? { ...s, ...patch } : s)
+        });
+    };
+    const patchAbility = (abilityId: number, patch: Partial<Ability>) => {
+        if (!character) return;
+        setCharacter({
+            ...character,
+            abilities: character.abilities.map(a => a.id === abilityId ? { ...a, ...patch } : a)
+        });
+    };
+
+    // ---------- Persistência por item (chamada no onBlur)
+    const saveAttribute = (attr: Attribute) =>
+        fetch(`${API_URL}/attributes/${attr.id}`, {
+            method: 'PUT', headers: authHeaders(), body: JSON.stringify({ value: attr.value })
+        }).catch(err => console.error(err));
+
+    const saveSkill = (skill: Skill) => {
+        if (skill.id < 0) {
+            // Skill novo → POST
+            fetch(`${API_URL}/skills`, {
+                method: 'POST', headers: authHeaders(),
+                body: JSON.stringify({ character_id: character!.id, name: skill.name, value: skill.value })
+            })
+            .then(r => r.json())
+            .then((res: { id: number }) => {
+                // Troca o id temporário pelo real
+                setCharacter(prev => prev ? {
+                    ...prev,
+                    skills: prev.skills.map(s => s.id === skill.id ? { ...s, id: res.id } : s)
+                } : prev);
+            }).catch(err => console.error(err));
+        } else {
+            fetch(`${API_URL}/skills/${skill.id}`, {
+                method: 'PUT', headers: authHeaders(),
+                body: JSON.stringify({ name: skill.name, value: skill.value })
+            }).catch(err => console.error(err));
+        }
+    };
+
+    const saveAbility = (ability: Ability) => {
+        if (ability.id < 0) {
+            fetch(`${API_URL}/abilities`, {
+                method: 'POST', headers: authHeaders(),
+                body: JSON.stringify({
+                    character_id: character!.id,
+                    name: ability.name, description: ability.description, image: ability.image
+                })
+            })
+            .then(r => r.json())
+            .then((res: { id: number }) => {
+                setCharacter(prev => prev ? {
+                    ...prev,
+                    abilities: prev.abilities.map(a => a.id === ability.id ? { ...a, id: res.id } : a)
+                } : prev);
+            }).catch(err => console.error(err));
+        } else {
+            fetch(`${API_URL}/abilities/${ability.id}`, {
+                method: 'PUT', headers: authHeaders(),
+                body: JSON.stringify({
+                    name: ability.name, description: ability.description, image: ability.image
+                })
+            }).catch(err => console.error(err));
+        }
+    };
+
+    // ---------- Criar novos (id temporário negativo até o POST retornar)
+    const tempIdRef = useRef(-1);
+    const addSkill = () => {
+        if (!character) return;
+        const newSkill: Skill = { id: tempIdRef.current--, name: 'Perícia nova', value: 0 };
+        setCharacter({ ...character, skills: [...character.skills, newSkill] });
+        saveSkill(newSkill);
+    };
+    const addAbility = () => {
+        if (!character) return;
+        const newAbility: Ability = { id: tempIdRef.current--, name: 'Habilidade nova', description: '', image: '' };
+        setCharacter({ ...character, abilities: [...character.abilities, newAbility] });
+        saveAbility(newAbility);
+    };
+
+    if (loading || !character) {
+        return <div className="loading-screen">Carregando Grimório / Ficha de Personagem...</div>;
+    }
+
+    return (
+        <div className='CharacterSheet-container'>
+            <div className='CharacterSheet-header'>
+                <button onClick={() => navigate(-1)}><img src={ExitArrow} alt="botão de saída"/></button>
+            </div>
+            <div className='CharacterSheet-content'>
+                <div className='CharacterSheet-character'>
+                    <h2>Ficha de personagem</h2>
+                    <div className='CharacterSheet-profile'>
+                        <div className='profile-image-wrapper'>
+                            <img
+                                className='Profile-img'
+                                src={character.image || "https://placehold.co/200x200"}
+                                alt="imagem do personagem"
+                            />
+                            <button className='dice-button'><img src={Dice} alt="botão de girar dados"/></button>
+                            <div className='Shield'>
+                                <img src={Shield} alt="defesa do personagem"/>
+                                {isEditing ? (
+                                    <input
+                                        aria-label="defesa"
+                                        type="number"
+                                        value={character.defense}
+                                        onChange={e => setCharacter({ ...character, defense: Number(e.target.value) })}
+                                        onBlur={e => updateCharacter({ defense: Number(e.target.value) })}
+                                    />
+                                ) : (
+                                    <p>{character.defense}</p>
+                                )}
+                            </div>
+                            <div className='SanityBar'>
+                                <img src={SanityBar} alt="barra de sanidade" className='sanityBar-img'/>
+                                <div className='sanityBar-content'>
+                                    <button onClick={() => handleSanityChange(1)}><img src={Add} alt="Aumentar"/></button>
+                                    <p className='sanity-current'>{currentSanity}</p>
+                                    <p className='sanity-divider'>/</p>
+                                    {isEditing ? (
+                                        <input
+                                            aria-label="sanity"
+                                            type="number"
+                                            className='sanity-max'
+                                            value={character.max_sanity}
+                                            onChange={e => setCharacter({ ...character, max_sanity: Number(e.target.value) })}
+                                            onBlur={e => updateCharacter({ max_sanity: Number(e.target.value) })}
+                                        />
+                                    ) : (
+                                        <p className='sanity-max'>{character.max_sanity}</p>
+                                    )}
+                                    <button onClick={() => handleSanityChange(-1)}><img src={Minus} alt="Diminuir"/></button>
+                                </div>
+                            </div>
                         </div>
-                        <div className='SanityBar'>
-                            <img src={SanityBar} alt="barra de sanidade" className='sanityBar-img'/>
-                            <div className='sanityBar-content'>
-                                <button onClick={() => setCurrentSanity(currentSanity + 1)}><img src={Add} alt="Aumentar"/></button>
-                                <p className='sanity-current'>{currentSanity}</p>
-                                <p className='sanity-divider'>/</p>
-                                <p className='sanity-max'>{maxSanity}</p>
-                                <button onClick={() => setCurrentSanity(currentSanity - 1)}><img src={Minus} alt="Diminuir"/></button>
+
+                        <div className='profile-info'>
+                            <h3>{character.name}</h3>
+                        </div>
+
+                        <div className='lifeBar-container'>
+                            <img src={Heart} alt="vida do personagem"/>
+                            <div className='lifeBar'>
+                                <button onClick={() => handleHpChange(-1)}><img src={ArrowLeft} alt="Diminuir"/></button>
+                                {isEditing ? (
+                                    <span>
+                                        {currentHp} /{' '}
+                                        <input
+                                            aria-label="hp"
+                                            type="number"
+                                            value={character.max_hp}
+                                            onChange={e => setCharacter({ ...character, max_hp: Number(e.target.value) })}
+                                            onBlur={e => updateCharacter({ max_hp: Number(e.target.value) })}
+                                        />
+                                    </span>
+                                ) : (
+                                    <span>{currentHp} / {character.max_hp}</span>
+                                )}
+                                <button onClick={() => handleHpChange(1)}><img src={ArrowRight} alt="Aumentar"/></button>
                             </div>
                         </div>
                     </div>
 
-                    <div className='profile-info'>
-                        <h3>nome do personagem</h3>
-                    </div>
-
-                    <div className='lifeBar-container'>
-                        <img src={Heart} alt="vida do personagem"/>
-                        <div className='lifeBar'>
-                            <button onClick={() => setCurrentHp(currentHp - 1)}><img src={ArrowLeft} alt="Diminuir"/></button>
-                            <span>{currentHp} / {maxHp}</span>
-                            <button onClick={() => setCurrentHp(currentHp + 1)}><img src={ArrowRight} alt="Aumentar"/></button>
+                    {character.attributes.map(attr => (
+                        <div className='CharacterSheet-attributes' key={attr.id}>
+                            <div className='attribute-icon'>
+                                <img src={Hexagon} alt="hexágono de atributo"/>
+                                {isEditing ? (
+                                    <input
+                                        aria-label="attribute"
+                                        type="number"
+                                        value={attr.value}
+                                        onChange={e => patchAttribute(attr.id, Number(e.target.value))}
+                                        onBlur={() => saveAttribute(attr)}
+                                    />
+                                ) : (
+                                    <p>{attr.value}</p>
+                                )}
+                            </div>
+                            <h2>{attr.name}</h2>
                         </div>
-                    </div>
+                    ))}
                 </div>
 
-                <div className='CharacterSheet-attributes'>
-                    <div className='attribute-icon'>
-                        <img src={Hexagon} alt="hexágona de atributo"/>
-                        <p>1</p>
-                    </div>
-                    <h2>Intelecto</h2>
+                <div className='CharacterSheet-skill'>
+                    <h2>Perícias</h2>
+                    <ol>
+                        {character.skills.map(skill => (
+                            <li key={skill.id}>
+                                {isEditing ? (
+                                    <input
+                                        type="text"
+                                        aria-label={`nome de ${skill.name}`}
+                                        value={skill.name}
+                                        onChange={e => patchSkill(skill.id, { name: e.target.value })}
+                                        onBlur={() => saveSkill(skill)}
+                                    />
+                                ) : (
+                                    <p>{skill.name}</p>
+                                )}
+                                <input
+                                    type="number"
+                                    aria-label={skill.name}
+                                    value={skill.value}
+                                    readOnly={!isEditing}
+                                    onChange={e => patchSkill(skill.id, { value: Number(e.target.value) })}
+                                    onBlur={() => saveSkill(skill)}
+                                />
+                            </li>
+                        ))}
+                    </ol>
+                    {isEditing && (
+                        <button onClick={addSkill}>+ Nova perícia</button>
+                    )}
                 </div>
-                <div className='CharacterSheet-attributes'>
-                    <div className='attribute-icon'>
-                        <img src={Hexagon} alt="hexágona de atributo"/>
-                        <p>1</p>
-                    </div>
-                    <h2>Força</h2>
-                </div>
-                <div className='CharacterSheet-attributes'>
-                    <div className='attribute-icon'>
-                        <img src={Hexagon} alt="hexágona de atributo"/>
-                        <p>1</p>
-                    </div>
-                    <h2>Vigor</h2>
-                </div>
-                <div className='CharacterSheet-attributes'>
-                    <div className='attribute-icon'>
-                        <img src={Hexagon} alt="hexágona de atributo"/>
-                        <p>1</p>
-                    </div>
-                    <h2>Agilidade</h2>
-                </div>
-                <div className='CharacterSheet-attributes'>
-                    <div className='attribute-icon'>
-                        <img src={Hexagon} alt="hexágona de atributo"/>
-                        <p>1</p>
-                    </div>
-                    <h2>Presença</h2>
-                </div>
-            </div>
 
-            <div className='CharacterSheet-skill'>
-                <h2>Perícias</h2>
-                <ol>
-                    <li><p>Atletismo</p> <input type="number" aria-label="atletismo" defaultValue={0}/> <input type="number" aria-label="atletismo2" defaultValue={0}/></li>
-                    <li><p>Furtividade</p> <input type="number" aria-label="furtividade" defaultValue={0}/> <input type="number" aria-label="furtividade2" defaultValue={0}/></li>
-                    <li><p>Percepção</p> <input type="number" aria-label="percepcao" defaultValue={0}/> <input type="number" aria-label="percepcao2" defaultValue={0}/></li>
-                    <li><p>Persuasão</p> <input type="number" aria-label="persuasao" defaultValue={0}/> <input type="number" aria-label="persuasao2" defaultValue={0}/></li>
-                    <li><p>Intimidação</p> <input type="number" aria-label="intimidacao" defaultValue={0}/> <input type="number" aria-label="intimidacao2" defaultValue={0}/></li>
-                    <li><p>Medicina</p> <input type="number" aria-label="medicina" defaultValue={0}/> <input type="number" aria-label="medicina2" defaultValue={0}/></li>
-                    <li><p>Investigação</p> <input type="number" aria-label="investigacao" defaultValue={0}/> <input type="number" aria-label="investigacao2" defaultValue={0}/></li>
-                    <li><p>Arcanismo</p> <input type="number" aria-label="arcanismo" defaultValue={0}/> <input type="number" aria-label="arcanismo2" defaultValue={0}/></li>
-                    <li><p>História</p> <input type="number" aria-label="historia" defaultValue={0}/> <input type="number" aria-label="historia2" defaultValue={0}/></li>
-                    <li><p>Acrobacia</p> <input type="number" aria-label="acrobacia" defaultValue={0}/> <input type="number" aria-label="acrobacia2" defaultValue={0}/></li>
-                    <li><p>Atletismo</p> <input type="number" aria-label="atletismo" defaultValue={0}/> <input type="number" aria-label="atletismo2" defaultValue={0}/></li>
-                    <li><p>Furtividade</p> <input type="number" aria-label="furtividade" defaultValue={0}/> <input type="number" aria-label="furtividade2" defaultValue={0}/></li>
-                    <li><p>Percepção</p> <input type="number" aria-label="percepcao" defaultValue={0}/> <input type="number" aria-label="percepcao2" defaultValue={0}/></li>
-                    <li><p>Persuasão</p> <input type="number" aria-label="persuasao" defaultValue={0}/> <input type="number" aria-label="persuasao2" defaultValue={0}/></li>
-                    <li><p>Intimidação</p> <input type="number" aria-label="intimidacao" defaultValue={0}/> <input type="number" aria-label="intimidacao2" defaultValue={0}/></li>
-                    <li><p>Medicina</p> <input type="number" aria-label="medicina" defaultValue={0}/> <input type="number" aria-label="medicina2" defaultValue={0}/></li>
-                    <li><p>Investigação</p> <input type="number" aria-label="investigacao" defaultValue={0}/> <input type="number" aria-label="investigacao2" defaultValue={0}/></li>
-                    <li><p>Arcanismo</p> <input type="number" aria-label="arcanismo" defaultValue={0}/> <input type="number" aria-label="arcanismo2" defaultValue={0}/></li>
-                    <li><p>História</p> <input type="number" aria-label="historia" defaultValue={0}/> <input type="number" aria-label="historia2" defaultValue={0}/></li>
-                    <li><p>Acrobacia</p> <input type="number" aria-label="acrobacia" defaultValue={0}/> <input type="number" aria-label="acrobacia2" defaultValue={0}/></li>
-                </ol>
-            </div>
-            <div className='CharacterSheet-abilities-inventory'>
-                <button><img src={Edit} alt="botão de edição"/></button>
-                <h2>Habilidades</h2>
-                <ol>
-                    {abilities.map(ability => (<AbilityCard title={ability.title} description={ability.description} image={ability.image} key={ability.id}/>))}
-                </ol>
-                <h2>Anotações</h2>
-                <textarea aria-label="anotações" name="anotações" id="inventory"></textarea>
+                <div className='CharacterSheet-abilities-inventory'>
+                    <button  className={isEditing ? 'edit-button active' : 'edit-button'} 
+                        onClick={() => setIsEditing(prev => !prev)}>
+                        <img src={Edit} alt="botão de edição"/>
+                    </button>
+                    <h2>Habilidades</h2>
+                    <ol>
+                        {character.abilities.map(ability => (
+                            isEditing ? (
+                                <li key={ability.id}>
+                                    <input
+                                        type="text"
+                                        aria-label="nome da habilidade"
+                                        value={ability.name}
+                                        onChange={e => patchAbility(ability.id, { name: e.target.value })}
+                                        onBlur={() => saveAbility(ability)}
+                                    />
+                                    <textarea className='ability-description'
+                                        aria-label="descrição da habilidade"
+                                        value={ability.description}
+                                        onChange={e => patchAbility(ability.id, { description: e.target.value })}
+                                        onBlur={() => saveAbility(ability)}
+                                    />
+                                    <input
+                                        type="file"
+                                        accept='image/*'
+                                        aria-label="imagem"
+                                        placeholder="imagem"
+                                        onChange={e => patchAbility(ability.id, { image: e.target.files[0] })}
+                                        onBlur={() => saveAbility(ability)}
+                                    />
+                                </li>
+                            ) : (
+                                <AbilityCard
+                                    title={ability.name}
+                                    description={ability.description}
+                                    image={ability.image || "https://placehold.co/50x50"}
+                                    key={ability.id}
+                                />
+                            )
+                        ))}
+                    </ol>
+                    {isEditing && (
+                        <button onClick={addAbility}>+ Nova habilidade</button>
+                    )}
+                    <h2>Anotações</h2>
+                    <textarea
+                        aria-label="anotações"
+                        name="anotações"
+                        id="inventory"
+                        value={notes}
+                        onChange={handleNotesChange}
+                    ></textarea>
+                </div>
             </div>
         </div>
-    </div>
-)
+    )
 }
 
-export default CharacterSheet
+export default CharacterSheet;

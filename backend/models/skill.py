@@ -26,7 +26,7 @@ class Skill(db.Model):
 
     __table_args__ = (
         db.CheckConstraint(
-            'value BETWEEN 5 AND 20'
+            'value BETWEEN -20 AND 20'
         ),
     )
 
