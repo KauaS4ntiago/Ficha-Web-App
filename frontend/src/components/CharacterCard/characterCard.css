@@ -16,6 +16,10 @@
 .CharacterCard-container img {
     border-radius: 50%;
     width: 11rem;
+    min-width: 11rem;
+    max-width: 11rem;
+    min-height: 11rem;
+    max-height: 11rem;
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
 }
 

@@ -8,7 +8,7 @@ html {
 
 .DashBoard-content {
     flex: 1; /* Faz o container ocupar todo o espaço restante da tela */
-    overflow-y: auto; /* Agora o scroll vai funcionar! */
+    overflow-y: auto; 
     overflow-x: hidden;
 
     /* Estilização do scrollbar interna */
@@ -57,7 +57,9 @@ html {
 .DashBoard-header h1 {
     position: absolute;
 
-    left: 50%;
+    display: block;
+
+    left:50.5%;
 
     transform: translateX(-50%);
 
@@ -73,7 +75,7 @@ html {
 
     margin-left: auto;
 
-    padding: 15px;
+    padding: 1rem;
 }
 
 .DashBoard-button img {

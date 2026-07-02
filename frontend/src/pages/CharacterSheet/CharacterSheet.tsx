@@ -34,8 +34,13 @@ interface CharacterData {
 }
 
 const API_URL = 'http://127.0.0.1:5000';
+
 const authHeaders = () => ({
     'Content-Type': 'application/json',
+    'Authorization': `Bearer ${localStorage.getItem('token')}`
+});
+
+const authHeadersFormData = () => ({
     'Authorization': `Bearer ${localStorage.getItem('token')}`
 });
 
@@ -49,8 +54,6 @@ function CharacterSheet() {
     const [notes, setNotes] = useState('');
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
-    const blobUrl = URL.createObjectURL(file);
-
 
     useEffect(() => {
         fetch(`${API_URL}/characters/${id}`, { headers: authHeaders() })
@@ -69,14 +72,27 @@ function CharacterSheet() {
             });
     }, [id, navigate]);
 
-    // ---------- PUT genérico do personagem (hp, sanidade, max_hp, max_sanity, notes...)
-    const updateCharacter = (payload: Partial<CharacterData>) => {
+    const getImageUrl = (path: string, type: 'abilities' | 'characters') => {
+        if (!path) return '';
+        if (path.startsWith('blob:') || path.startsWith('http')) return path;
+        return `${API_URL}/${type}/uploads/${path}`;
+    };
+
+    const updateCharacter = (payload: Partial<CharacterData>, imageFile?: File) => {
+        const formData = new FormData();
+        Object.entries(payload).forEach(([key, value]) => {
+            if (key === 'image') return;
+            formData.append(key, String(value));
+        });
+        if (imageFile) formData.append('image', imageFile);
+
         fetch(`${API_URL}/characters/${id}`, {
-            method: 'PUT', headers: authHeaders(), body: JSON.stringify(payload)
+            method: 'PUT',
+            headers: authHeadersFormData(),
+            body: formData
         }).catch(err => console.error("Erro ao salvar personagem:", err));
     };
 
-    // ---------- HP / Sanidade (botões +/-)
     const handleHpChange = (amount: number) => {
         if (!character) return;
         const newHp = Math.min(character.max_hp, Math.max(0, currentHp + amount));
@@ -90,7 +106,6 @@ function CharacterSheet() {
         updateCharacter({ current_sanity: newSanity });
     };
 
-    // ---------- Anotações (debounce)
     const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
@@ -99,7 +114,14 @@ function CharacterSheet() {
         notesTimer.current = setTimeout(() => updateCharacter({ notes: value }), 600);
     };
 
-    // ---------- Helpers de estado local para coleções
+    const handleCharacterImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !character) return;
+        const previewUrl = URL.createObjectURL(file);
+        setCharacter({ ...character, image: previewUrl });
+        updateCharacter({}, file);
+    };
+
     const patchAttribute = (attrId: number, value: number) => {
         if (!character) return;
         setCharacter({
@@ -122,7 +144,6 @@ function CharacterSheet() {
         });
     };
 
-    // ---------- Persistência por item (chamada no onBlur)
     const saveAttribute = (attr: Attribute) =>
         fetch(`${API_URL}/attributes/${attr.id}`, {
             method: 'PUT', headers: authHeaders(), body: JSON.stringify({ value: attr.value })
@@ -130,14 +151,12 @@ function CharacterSheet() {
 
     const saveSkill = (skill: Skill) => {
         if (skill.id < 0) {
-            // Skill novo → POST
             fetch(`${API_URL}/skills`, {
                 method: 'POST', headers: authHeaders(),
                 body: JSON.stringify({ character_id: character!.id, name: skill.name, value: skill.value })
             })
             .then(r => r.json())
             .then((res: { id: number }) => {
-                // Troca o id temporário pelo real
                 setCharacter(prev => prev ? {
                     ...prev,
                     skills: prev.skills.map(s => s.id === skill.id ? { ...s, id: res.id } : s)
@@ -151,14 +170,18 @@ function CharacterSheet() {
         }
     };
 
-    const saveAbility = (ability: Ability) => {
+    const saveAbility = (ability: Ability, imageFile?: File) => {
+        const formData = new FormData();
+        formData.append('name', ability.name);
+        formData.append('description', ability.description);
+        if (imageFile) formData.append('image', imageFile);
+
         if (ability.id < 0) {
+            formData.append('character_id', String(character!.id));
             fetch(`${API_URL}/abilities`, {
-                method: 'POST', headers: authHeaders(),
-                body: JSON.stringify({
-                    character_id: character!.id,
-                    name: ability.name, description: ability.description, image: ability.image
-                })
+                method: 'POST',
+                headers: authHeadersFormData(),
+                body: formData
             })
             .then(r => r.json())
             .then((res: { id: number }) => {
@@ -169,15 +192,21 @@ function CharacterSheet() {
             }).catch(err => console.error(err));
         } else {
             fetch(`${API_URL}/abilities/${ability.id}`, {
-                method: 'PUT', headers: authHeaders(),
-                body: JSON.stringify({
-                    name: ability.name, description: ability.description, image: ability.image
-                })
+                method: 'PUT',
+                headers: authHeadersFormData(),
+                body: formData
             }).catch(err => console.error(err));
         }
     };
 
-    // ---------- Criar novos (id temporário negativo até o POST retornar)
+    const handleAbilityImageChange = (ability: Ability, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const previewUrl = URL.createObjectURL(file);
+        patchAbility(ability.id, { image: previewUrl });
+        saveAbility({ ...ability, image: previewUrl }, file);
+    };
+
     const tempIdRef = useRef(-1);
     const addSkill = () => {
         if (!character) return;
@@ -206,11 +235,29 @@ function CharacterSheet() {
                     <h2>Ficha de personagem</h2>
                     <div className='CharacterSheet-profile'>
                         <div className='profile-image-wrapper'>
-                            <img
-                                className='Profile-img'
-                                src={character.image || "https://placehold.co/200x200"}
-                                alt="imagem do personagem"
-                            />
+                            {isEditing ? (
+                                <label htmlFor="character-image-input" className="character-image-label">
+                                    <img
+                                        className='Profile-img'
+                                        src={character.image ? getImageUrl(character.image, 'characters') : "https://placehold.co/200x200"}
+                                        alt="imagem do personagem"
+                                    />
+                                    <input
+                                        id="character-image-input"
+                                        type="file"
+                                        accept="image/*"
+                                        aria-label="imagem do personagem"
+                                        onChange={handleCharacterImageChange}
+                                        hidden
+                                    />
+                                </label>
+                            ) : (
+                                <img
+                                    className='Profile-img'
+                                    src={character.image ? getImageUrl(character.image, 'characters') : "https://placehold.co/200x200"}
+                                    alt="imagem do personagem"
+                                />
+                            )}
                             <button className='dice-button'><img src={Dice} alt="botão de girar dados"/></button>
                             <div className='Shield'>
                                 <img src={Shield} alt="defesa do personagem"/>
@@ -250,7 +297,17 @@ function CharacterSheet() {
                         </div>
 
                         <div className='profile-info'>
-                            <h3>{character.name}</h3>
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    aria-label="nome do personagem"
+                                    value={character.name}
+                                    onChange={e => setCharacter({ ...character, name: e.target.value })}
+                                    onBlur={e => updateCharacter({ name: e.target.value })}
+                                />
+                            ) : (
+                                <h3>{character.name}</h3>
+                            )}
                         </div>
 
                         <div className='lifeBar-container'>
@@ -356,16 +413,14 @@ function CharacterSheet() {
                                         type="file"
                                         accept='image/*'
                                         aria-label="imagem"
-                                        placeholder="imagem"
-                                        onChange={e => patchAbility(ability.id, { image: e.target.files[0] })}
-                                        onBlur={() => saveAbility(ability)}
+                                        onChange={e => handleAbilityImageChange(ability, e)}
                                     />
                                 </li>
                             ) : (
                                 <AbilityCard
                                     title={ability.name}
                                     description={ability.description}
-                                    image={ability.image || "https://placehold.co/50x50"}
+                                    image={ability.image ? getImageUrl(ability.image, 'abilities') : "https://placehold.co/50x50"}
                                     key={ability.id}
                                 />
                             )

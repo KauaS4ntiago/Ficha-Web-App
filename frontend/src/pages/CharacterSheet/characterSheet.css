@@ -530,3 +530,8 @@ textarea.ability-description {
   resize: none;
 }
 
+.character-image-label {
+  cursor: pointer;
+  display: block;
+}
+

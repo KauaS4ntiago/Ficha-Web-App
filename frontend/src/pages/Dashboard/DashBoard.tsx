@@ -31,6 +31,12 @@ function DashBoard() {
     })
 }
 
+    const getImageUrl = (path: string) => {
+        if (!path) return '';
+        if (path.startsWith('http')) return path; // já é uma URL completa (ex: placehold.co)
+    return `http://127.0.0.1:5000/characters/uploads/${path}`;
+    };
+
     useEffect(() => { loadCharacters()},[])
         
     const filteredCharacters = characters.filter(
@@ -98,7 +104,7 @@ function DashBoard() {
                 </div>
             <ul className='Dashboard-list'>
                 {filteredCharacters.map(character => (
-                    <CharacterCard name={character.name} image={character.image} id={character.id} key={character.id}/>
+                    <CharacterCard name={character.name} image={getImageUrl(character.image)} id={character.id} key={character.id}/>
                 ))}
             </ul>
            </div>
